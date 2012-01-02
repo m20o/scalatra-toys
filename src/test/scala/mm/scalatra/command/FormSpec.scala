@@ -1,12 +1,8 @@
 package mm.scalatra
-package form
+package command
 
 import org.specs2.mutable.Specification
 
-import org.specs2.runner.JUnitRunner
-import org.junit.runner.RunWith
-
-import Fields._
 
 trait KnownFields {
 
@@ -20,9 +16,8 @@ trait KnownFields {
 
 }
 
-class WithBinding extends Form with KnownFields {
+class WithBinding extends Command with KnownFields {
 
-  import Fields._
 
   val a = bind(upperCaseName)
 
@@ -32,7 +27,7 @@ class WithBinding extends Form with KnownFields {
 
 class FormSpec extends Specification {
 
-  "The 'Form' trait" should {
+  "The 'Command' trait" should {
 
     "bind and register a 'Field[T]' instance returning a Binding[T]" in {
       val form = new WithBinding
@@ -57,12 +52,12 @@ class FormSpec extends Specification {
   }
 }
 
-class WithValidation extends WithBinding with Validatable {
+class WithValidation extends WithBinding with ValidationSupport {
 
 
   val legalAge = bind(age).validate {
-    case s@Some(yo: Int) if yo < 18 => FieldError(s, "Your age must be at least of 18")
-    case None => FieldError[Int](None, "Age field is required")
+    case s@Some(yo: Int) if yo < 18 => RejectField(s, "Your age must be at least of 18")
+    case None => RejectField[Int](None, "Age field is required")
   }
 
 }
@@ -70,7 +65,7 @@ class WithValidation extends WithBinding with Validatable {
 
 class ValidatableSpec extends Specification {
 
-  "The 'Validatable' trait" should {
+  "The 'ValidationSupport' trait" should {
 
     "do normal binding within 'process'" in {
 
@@ -90,17 +85,16 @@ class ValidatableSpec extends Specification {
       val ageValidatedForm = new WithValidation
       val params = Map("name" -> "John", "surname" -> "Doe", "age" -> "15")
 
-      ageValidatedForm.validationOption must beNone
+      ageValidatedForm.valid must beNone
 
       ageValidatedForm.process(params)
 
-      ageValidatedForm.validationOption must beSome[Validation]
+      ageValidatedForm.valid must beSome[Boolean]
 
-      val validationResult = ageValidatedForm.validation
 
-      validationResult.valid must beFalse
-      validationResult.errors aka "validation error map" must haveKey("age")
-      validationResult.errors.get("age").get aka "the validation error message" must_== (Some("Your age must be at least of 18"), Some(15))
+      ageValidatedForm.valid.get must beFalse
+      ageValidatedForm.fieldErrors aka "validation error list" must haveKey("age")
+      ageValidatedForm.fieldErrors.get("age").get.asInstanceOf[Rejected[Int]] aka "the validation error" must_== (Rejected(Some("Your age must be at least of 18"), Some(15)))
     }
 
   }

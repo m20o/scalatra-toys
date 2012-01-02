@@ -1,4 +1,4 @@
-package mm.scalatra.form
+package mm.scalatra.command
 
 import scala.math._
 import org.specs2.mutable.Specification
@@ -129,18 +129,18 @@ class FieldSpec extends Specification {
 
     "provide Field[Date] with an equivalent Tuple-based argument syntax" in {
       val format = "yyyyMMddHHmmsss"
-      val field = newField[Date]((s:String) => Fields.asDateWithStringFormat(s -> format))
+      val field = newField[Date]((s: String) => Fields.asDateWithStringFormat(s -> format))
       val now = newDateWithFormattedString(dateFormatFor(format))
       field.update(now._2)
       field.value must beSome[Date]
       field.value.get must_== now._1
     }
-    
+
     "provide a generic implementation of Field[Seq[T]] which delegates inner conversion" in {
-      val field = newField[Seq[Int]](Fields.asSeq[Int](_, (s:String) => s.toInt))
+      val field = newField[Seq[Int]](Fields.asSeq[Int](_, (s: String) => s.toInt))
       field.update("1,2,3,4,5")
-      field.value must beSome [Seq[Int]]
-      field.value.get must_== List(1,2,3,4,5).toSeq
+      field.value must beSome[Seq[Int]]
+      field.value.get must_== List(1, 2, 3, 4, 5).toSeq
     }
   }
 

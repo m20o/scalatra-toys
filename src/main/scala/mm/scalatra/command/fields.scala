@@ -1,21 +1,42 @@
-package mm.scalatra.form
+package mm.scalatra.command
 
 import java.util.Date
 import java.text._
 
 
+/**
+ * Command object field. Supports basic attributes.
+ * TODO work in progress. Field is actually used to tie web pameters with typed value but it's somewhat redundant.
+ */
 trait Field[T] {
 
+  /**
+   * The field name.
+   */
   def name: String
 
+  /**
+   * The original value of the fields,
+   */
   def originalValue: String
 
+  /**
+   * Converted value.
+   */
   def value: Option[T]
 
+  /**
+   * Update the current field value.
+   * TODO Hack - will be removed in a near future.
+   */
   def update(value: String)
 
 }
 
+/**
+ * Field template class for implementations. Use a (String) => T function
+ * as conversion strategy between strings and required types.
+ */
 abstract class BasicField[T](private val parse: (String) => T) extends Field[T] {
 
   private var _original: String = null
@@ -62,6 +83,9 @@ sealed class DateField(val name: String, format: DateFormat = DateFormat.getDate
 
 sealed class SeqField[T](val name: String, elementParser: (String) => T, separator: String = ",") extends BasicField[Seq[T]](_.split(separator).map(elementParser).toSeq)
 
+/**
+ * Commonly-used field implementations factory.
+ */
 object Fields {
 
   def asGeneric[T](name: String, parser: (String) => T): Field[T] = new GenericField[T](name, parser)

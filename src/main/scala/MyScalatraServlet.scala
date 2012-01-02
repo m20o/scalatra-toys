@@ -1,59 +1,81 @@
-import java.text.DateFormat
 import java.util._
-import mm.scalatra.form._
+import mm.scalatra.command._
 import org.scalatra._
-import java.net.URL
 import scalate.ScalateSupport
 
-sealed class ValidadedBean extends MyBean with Validatable
+
+class MyScalatraServlet extends ScalatraServlet with ScalateSupport with FormSupport {
 
 
-class MyScalatraServlet extends ScalatraServlet
-with ScalateSupport
-with FormSupport
-{
-
-  
   get("/test") {
 
-    val form = formOf[ValidadedBean]
+    val form = formOf[MyBean]
 
-    println("form " + form + " -> class " + form.getClass.getName)
+    val name = form.name
+    val surname = form.surname
+    val age = form.age
+    val data = form.data
 
-    val name = form.name.value
-    val age = form.age.value
-    val date = form.birthday.value
+    def showError(b: ValidatedBinding[_]) = b.rejected.map(_.error.getOrElse("This field is wrong")).getOrElse("")
 
-    val ages: Option[Int] = form.age
-
-    val validation = form.validation
+    def printValue(b: ValidatedBinding[_]) = b.field.originalValue
 
     <html>
       <body>
-        <h1>Hello, world!</h1>
-        Say
-        <a href="hello-scalate">hello to Scalate</a>
-          <br/>
-        <p>Locale is
-        </p>
+        <h1>Submit this nice form please!</h1>
+        <form method="GET">
+          <p>Name
+            <input type="text" name="name" value={printValue(name)}></input>{showError(name)}
+          </p>
+          <p>Surname
+            <input type="text" name="surname" value={printValue(surname)}></input>{showError(surname)}
+          </p>
+          <p>Age
+            <input type="number" name="age" value={printValue(age)}></input>{showError(age)}
+          </p>
+          <p>Date
+            <input type="text" name="data" value={printValue(data)}></input>{showError(data)}
+          </p>
+            <br/>
+            <input type="submit"/>
+        </form>
         <p>Name is
           {name.getOrElse("BoH")}
         </p>
         <p>Age is
           {age.getOrElse(-1)}
         </p>
-        <p>Birthday is
-          {date.getOrElse(null)}
-        </p>
         <p>Form is valid?
-          {validation.valid}
+          {form.valid}
         </p>
         <p>Errors
-          {validation.errors}
+          {form.fieldErrors}
         </p>
       </body>
     </html>
   }
+
+  get("/test", ifValid[MyBean]) {
+
+    val form = formOf[MyBean]
+
+    <html>
+      <body>
+        <h1>Submitted VALID data:</h1>
+        <p>Name:
+          {form.name.value.getOrElse("N/A")}{form.surname.value.getOrElse("N/A")}
+        </p>
+        <p>Age:
+          {form.age.value.get}
+        </p>
+        <p>Date:
+          {form.data.value.getOrElse("N/A")}
+        </p>
+      </body>
+    </html>
+
+  }
+
 
   notFound {
     // Try to render a ScalateTemplate if no route matched
@@ -65,49 +87,32 @@ with FormSupport
   }
 }
 
-case class B(var age: String)
 
-class MyBean extends Form {
+object MyBean {
+
+  def invalidBlank[T]: PartialFunction[Option[T], RejectField[T]] = {
+    case None => RejectField[T](None, "Field  is required")
+  }
+
+  def legalAge: PartialFunction[Option[Int], RejectField[Int]] = {
+    case s@Some(age: Int) if age < 18 => RejectField(s, "Legal age is required")
+  }
+
+}
+
+class MyBean extends Command with ValidationSupport {
 
   import Fields._
+  import MyBean._
 
-   def a = {
-     val ciccia = B("asdf")
-   }
-  /*
-  val name = bind(asString("name").validate({
-    case None => FieldError[String](null, "Field can't be null")
-  }))
-  */
+  val name = bind[String]("name").validate(invalidBlank)
 
-  val name = bind[String]("name").validate {
-    case None => FieldError[String](null, "Il campo 'nome' è richiesto")
+  val surname = bind[String]("surname").validate(invalidBlank)
+
+  val data = bind[Date]("data" -> "yyyyMMss") validate {
+    case Some(d: Date) if d.before(new Date(0)) => RejectField[Date](None, "La data non è valida")
   }
 
-  /*
-  val age = bind(asInt("age").validate({
-    case None => FieldError(None, "Bisogna specificare l'età dell'utente")
-    case Some(i: Int) if i < 18 => FieldError(Some(i), "L'utente deve essere maggiorenne")
-  }))
-  */
+  val age = bind[Int]("age") validate (legalAge orElse invalidBlank[Int])
 
-  val age = bind[Int]("age") validate {
-    case s@Some(i: Int) if i <= 18 => FieldError(s, "Devi essere maggiorenne!")
-    case None => FieldError[Int](null, "Il campo non può essere vuoto")
-  }
-
-
-
-
-  val birthday = bind[Date]("birthday" -> "yyyyMMdd") validate {
-    case (d: Date) => null
-    case _ => FieldError(None, "Il campo 'birthday' è richiesto")
-  }
-
-  val codes = bind[Seq[Int]]("codes" -> ((s: String) => s.toInt))
-
-  val caps = bind[Seq[String]]("caps") validate {
-    case s@Some(arr: Seq[String]) if arr.length == 0 => FieldError(s, "At least one caps is required")
-    case None => FieldError(None, "Il campo caps è richiesto")
-  }
 }
