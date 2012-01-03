@@ -1,4 +1,5 @@
 package mm.scalatra.command
+package field
 
 import java.util.Date
 import java.text._
@@ -6,7 +7,9 @@ import java.text._
 
 /**
  * Command object field. Supports basic attributes.
- * TODO work in progress. Field is actually used to tie web pameters with typed value but it's somewhat redundant.
+ *
+ * '''TODO''' work in progress. Field is actually used to tie web pameters with typed value but it's somewhat redundant.
+ * Will be probably changed in the future.
  */
 trait Field[T] {
 
@@ -27,9 +30,9 @@ trait Field[T] {
 
   /**
    * Update the current field value.
-   * TODO Hack - will be removed in a near future.
+   *
    */
-  def update(value: String)
+  protected[command] def update(value: String)
 
 }
 
@@ -86,7 +89,7 @@ sealed class SeqField[T](val name: String, elementParser: (String) => T, separat
 /**
  * Commonly-used field implementations factory.
  */
-object Fields {
+trait ImplicitCommonFields {
 
   def asGeneric[T](name: String, parser: (String) => T): Field[T] = new GenericField[T](name, parser)
 
@@ -125,5 +128,4 @@ object Fields {
   implicit def asStringSeq(name: String): Field[Seq[String]] = new SeqField[String](name, s => s)
 
   implicit def asStringSeq(param: (String, String)): Field[Seq[String]] = new SeqField[String](param._1, s => s, param._2)
-
 }

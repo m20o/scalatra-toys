@@ -1,4 +1,5 @@
 package mm.scalatra.command
+package field
 
 import scala.math._
 import org.specs2.mutable.Specification
@@ -47,7 +48,9 @@ class FieldSpec extends Specification {
     }
   }
 
-  "Fields object" should {
+  "ImplicitCommonFields object" should {
+
+    object Fields extends ImplicitCommonFields
 
     "provide Field[Boolean]" in {
       val field = testFieldType[Boolean](Fields.asBoolean(_))

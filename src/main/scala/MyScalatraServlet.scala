@@ -1,5 +1,6 @@
 import java.util._
 import mm.scalatra.command._
+import mm.scalatra.command.validation._
 import org.scalatra._
 import scalate.ScalateSupport
 
@@ -18,7 +19,7 @@ class MyScalatraServlet extends ScalatraServlet with ScalateSupport with FormSup
 
     def showError(b: ValidatedBinding[_]) = b.rejected.map(_.error.getOrElse("This field is wrong")).getOrElse("")
 
-    def printValue(b: ValidatedBinding[_]) = b.field.originalValue
+    def printValue(b: ValidatedBinding[_]) = b.originalValue
 
     <html>
       <body>
@@ -102,14 +103,14 @@ object MyBean {
 
 class MyBean extends Command with ValidationSupport {
 
-  import Fields._
   import MyBean._
+  import Command._
 
   val name = bind[String]("name").validate(invalidBlank)
 
   val surname = bind[String]("surname").validate(invalidBlank)
 
-  val data = bind[Date]("data" -> "yyyyMMss") validate {
+  val data = bind[Date]("data" -> "yyyyMMdd") validate {
     case Some(d: Date) if d.before(new Date(0)) => RejectField[Date](None, "La data non è valida")
   }
 

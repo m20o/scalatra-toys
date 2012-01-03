@@ -2,11 +2,12 @@ package mm.scalatra
 package command
 
 import org.specs2.mutable.Specification
+import java.lang.System
 
 
 trait KnownFields {
 
-  import Fields._
+  import Command._
 
   val upperCaseName = asGeneric[String]("name", _.toUpperCase)
 
@@ -14,15 +15,17 @@ trait KnownFields {
 
   val age = asInt("age")
 
+  val cap = asInt("cap")
+
 }
 
 class WithBinding extends Command with KnownFields {
-
 
   val a = bind(upperCaseName)
 
   val lower = bind(lowerCaseSurname)
 }
+
 
 
 class FormSpec extends Specification {
@@ -41,61 +44,64 @@ class FormSpec extends Specification {
       form.lower.value must_== None
     }
 
-    "process 'params' Map and bind matching values to specific " in {
+    "doBinding 'params' Map and bind matching values to specific " in {
       val form = new WithBinding
       val params = Map("name" -> "John", "surname" -> "Doe")
-      form.process(params)
+      form.doBinding(params)
       form.a.value must_== Some(params("name").toUpperCase)
       form.lower.value must_== Some(params("surname").toLowerCase)
     }
+    
+    "provide pluggable actions processed 'BEFORE' binding " in {
+      import System._
 
-  }
-}
+      trait PreBindAction extends WithBinding {
 
-class WithValidation extends WithBinding with ValidationSupport {
+        var timestamp : Long  = _
+        
+        beforeBinding {
+          a.field.originalValue must beNull[String]
+          timestamp = currentTimeMillis()
+        }
+      }
 
+      val form = new WithBinding with PreBindAction
+      val params = Map("name" -> "John", "surname" -> "Doe")
 
-  val legalAge = bind(age).validate {
-    case s@Some(yo: Int) if yo < 18 => RejectField(s, "Your age must be at least of 18")
-    case None => RejectField[Int](None, "Age field is required")
-  }
+      form.timestamp must_== 0L
 
-}
-
-
-class ValidatableSpec extends Specification {
-
-  "The 'ValidationSupport' trait" should {
-
-    "do normal binding within 'process'" in {
-
-      val ageValidatedForm = new WithValidation
-      val params = Map("name" -> "John", "surname" -> "Doe", "age" -> "15")
-
-      ageValidatedForm.process(params)
-
-      ageValidatedForm.a.value must_== Some(params("name").toUpperCase)
-      ageValidatedForm.lower.value must_== Some(params("surname").toLowerCase)
-      ageValidatedForm.age.value must_== Some(15)
-
+      form.doBinding(params)
+      
+      form.timestamp must be_<(currentTimeMillis())
+      form.a.field.originalValue must_== params("name")
     }
 
-    "validate only 'validatable bindings' within process" in {
+    "provide pluggable actions processed 'AFTER' binding " in {
+      import System._
 
-      val ageValidatedForm = new WithValidation
-      val params = Map("name" -> "John", "surname" -> "Doe", "age" -> "15")
+      trait AfterBindAction extends WithBinding {
 
-      ageValidatedForm.valid must beNone
+        private var _fullname: String = _
 
-      ageValidatedForm.process(params)
+        def fullName: Option[String] = Option { _fullname }
+        
+        afterBinding {
+          _fullname = a.value.get + " " + lower.value.get
+        }
+      }
 
-      ageValidatedForm.valid must beSome[Boolean]
+      val params = Map("name" -> "John", "surname" -> "Doe")
+      val form = new WithBinding with AfterBindAction
+      
+      form.fullName must beNone
 
+      form.doBinding(params)
+      
+      form.fullName must beSome[String]
+      form.fullName.get must_== params("name").toUpperCase + " " + params("surname").toLowerCase
 
-      ageValidatedForm.valid.get must beFalse
-      ageValidatedForm.fieldErrors aka "validation error list" must haveKey("age")
-      ageValidatedForm.fieldErrors.get("age").get.asInstanceOf[Rejected[Int]] aka "the validation error" must_== (Rejected(Some("Your age must be at least of 18"), Some(15)))
     }
-
   }
 }
+
+
