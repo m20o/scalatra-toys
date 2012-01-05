@@ -1,6 +1,15 @@
 package mm.scalatra.command
-package validation
 
+package object validation {
+
+  /**
+   * The field validator type.
+   */
+  type FieldValidator[T] = PartialFunction[Option[T], RejectField[T]]
+
+}
+
+package validation {
 
 /**
  * Based trait for field value validation
@@ -57,11 +66,6 @@ trait ValidatedBinding[T] extends Binding[T] {
  * [[mm.scalatra.command.validation.ValidatedBinding]] factory object.
  */
 object ValidatedBinding {
-
-  /**
-   * The field validator type.
-   */
-  type FieldValidator[T] = PartialFunction[Option[T], RejectField[T]]
 
   private def acceptAsDefault[T]: FieldValidator[T] = {
     case _ => null
@@ -173,4 +177,5 @@ trait ValidationSupport {
     _valid = Some(validatableBindings.view.forall(_.valid))
     _fieldErrors = validatableBindings.filterNot(_.valid).map((b: ValidatedBinding[_]) => (b.name, b.rejected.get)).toMap
   }
+}
 }
