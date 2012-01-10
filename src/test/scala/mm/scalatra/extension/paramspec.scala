@@ -34,9 +34,9 @@ class ParamsPimpingSpec extends Specification {
       params.getAs[Int]("a") must beNone
     }
 
-    "implicitly find TypeConverter(s) for a custom type" in {
+    case class Bogus(name: String)
 
-      case class Bogus(name: String)
+    "implicitly find TypeConverter(s) for a custom type" in {
 
       implicit val bogusConverter: TypeConverter[Bogus] = (s: String) => Bogus(s)
 
@@ -45,6 +45,15 @@ class ParamsPimpingSpec extends Specification {
       params.getAs[Bogus]("a") must beSome
 
       params.getAs[Bogus]("a").get aka "The bogus value" must_== Bogus("buffybuffy")
+
+    }
+
+
+    "explicitely receive a custom TypeConverter" in {
+
+      val params: ParamsType = FakeParams(Map("a" -> "buffybuffy"))
+
+      params.getAs[Bogus]("a")((s: String) => Bogus(s.toUpperCase)) must beSome(Bogus("BUFFYBUFFY"))
 
     }
   }
