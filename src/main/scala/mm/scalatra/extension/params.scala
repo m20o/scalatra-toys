@@ -1,7 +1,7 @@
 package mm.scalatra.extension
 
 import org.scalatra.util.{MapWithIndifferentAccess, MultiMapHeadView}
-import mm.scalatra.common.conversions.ImplicitConversions
+import mm.scalatra.common.conversions.{TypeConverter, ImplicitConversions}
 
 
 trait ScalatraParamsImplicits {
@@ -14,7 +14,7 @@ trait ScalatraParamsImplicits {
 
     def getAs[T <: Any : TypeConverter](name: String): Option[T] = {
       val converter = implicitly[TypeConverter[T]]
-      params.get(name).flatMap(converter(_))
+      params.get(name).flatMap(converter.convert(_))
     }
   }
 

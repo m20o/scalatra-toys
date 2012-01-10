@@ -2,6 +2,7 @@ package mm.scalatra.extension
 
 import org.specs2.mutable.Specification
 import org.scalatra.util.{MultiMap, MultiMapHeadView, MapWithIndifferentAccess}
+import mm.scalatra.common.conversions.TypeConverter
 
 class ParamsPimpingSpec extends Specification {
 
@@ -37,7 +38,7 @@ class ParamsPimpingSpec extends Specification {
 
       case class Bogus(name: String)
 
-      implicit val bogusConverter: TypeConverter[Bogus] = (s: String) => Some(Bogus(s))
+      implicit val bogusConverter: TypeConverter[Bogus] = (s: String) => Bogus(s)
 
       val params: ParamsType = FakeParams(Map("a" -> "buffybuffy"))
 
