@@ -1,12 +1,10 @@
-package mm.scalatra.conversions
+package mm.scalatra.common.conversions
 
 import org.specs2.mutable.Specification
 import java.util.{Date, Calendar}
-import mm.scalatra.common.conversions.{Conversions, ImplicitConversions}
 
 class ConversionsSpecs extends Specification {
 
-  import mm.scalatra.common.conversions.TypeConverter
 
   "The TypeConverted[T] trait (type class)" should {
 
@@ -22,7 +20,6 @@ class ConversionsSpecs extends Specification {
 
   "The DefaultConversion trait" should {
 
-    import mm.scalatra.common.conversions.DefaultConversion
     object WithImplicit extends DefaultConversion
 
     type SafeType[T] = DefaultConversion#Safe[T]
