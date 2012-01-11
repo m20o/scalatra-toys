@@ -1,6 +1,5 @@
 package mm.scalatra.extension
 
-import org.scalatra.util.{MapWithIndifferentAccess, MultiMapHeadView}
 import mm.scalatra.common.conversions.{TypeConverter, DefaultImplicitConversions}
 
 
