@@ -57,7 +57,7 @@ trait ValidatedBinding[T] extends Binding[T] {
    * The rejected message, if any.
    */
   def rejected: Option[Rejected[T]] = validation match {
-    case Left(r: Rejected[T]) => Some(r)
+    case Left(r) => Some(r)
     case _ => None
   }
 }
@@ -111,7 +111,7 @@ object ValidatedBinding {
  *  val name = bind[String]("f_name") validate {
  *    case s @ Some(text: String) if text.length < 3 => RejectField(s, "Name should be at least of 3 chars")
  *    case None => RejectField[String](None, "Name is required")
- *  }
+ * }
  *
  *  // f_surname has no validation rules
  *  val surname = bind[String]("f_surname")
@@ -119,7 +119,7 @@ object ValidatedBinding {
  *  // f_age can be null but, if specified, should be greater than 0.
  *  val age = bind[Int]("f_age") validate {
  *    case s @ Some(a : Int) if a < 0 => RejectField(s, "Age should be positive")
- *  }
+ * }
  * }
  * }}}
  *
@@ -178,4 +178,5 @@ trait ValidationSupport {
     _fieldErrors = validatableBindings.filterNot(_.valid).map((b: ValidatedBinding[_]) => (b.name, b.rejected.get)).toMap
   }
 }
+
 }

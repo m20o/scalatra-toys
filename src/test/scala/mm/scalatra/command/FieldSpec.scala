@@ -5,12 +5,16 @@ import scala.math._
 import org.specs2.mutable.Specification
 import java.util.Date
 import java.text.{SimpleDateFormat, DateFormat}
+import mm.scalatra.common.conversions.TypeConverter
 
 class FieldSpec extends Specification {
 
   "BasicField class " should {
 
-    case class TestingFieldImpl[T](name: String, parse: (String) => T) extends BasicField[T](parse)
+
+    case class TestingFieldImpl[T](override val name: String, parse: (String) => T) extends BasicField[T](name)(new TypeConverter[T] {
+      def convert(string: String) = Option(parse(string))
+    })
 
     "provide an 'update' method that updates 'originalValue" in {
 
@@ -23,72 +27,62 @@ class FieldSpec extends Specification {
       updater.originalValue must_== newValue
     }
 
-    "delegate to 'parse' method any conversion from String to specific type T" in {
+    "delegate to TypeConverter conversions from String to specific type T" in {
 
       val stringToDate = new TestingFieldImpl[Date]("date", (s: String) => new Date(s.toLong))
       val now = new Date
 
       stringToDate.update(now.getTime.toString)
 
-      stringToDate.value must beSome[Date]
-      stringToDate.value.get must_== now
+      stringToDate.value must beSome(now)
     }
 
-    "return 'parse' exceptions as None" in {
-      val failing = new TestingFieldImpl[Int]("failure", (s: String) => throw new RuntimeException)
-      failing.update("not relevant")
-      failing.value must beNone
-    }
-
-    "return 'parse' NULLs as Some(null)" in {
-      val failing = new TestingFieldImpl[String]("nulled", (s: String) => null)
-      failing.update("not relevant")
-      failing.value must beSome[String]
-      failing.value.get must beNull[String]
-    }
   }
+
+  object Fields extends ImplicitCommonFields
 
   "ImplicitCommonFields object" should {
 
-    object Fields extends ImplicitCommonFields
+    import Fields._
 
     "provide Field[Boolean]" in {
-      val field = testFieldType[Boolean](Fields.asBoolean(_))
+
+      val field = testImplicitFieldType[Boolean]
       setAndCheckValue(field, true)
     }
 
     "provide Field[Float]" in {
-      val field = testFieldType[Float](Fields.asFloat(_))
+      val field = testImplicitFieldType[Float]
       val num = random.toFloat
       setAndCheckValue(field, num)
     }
 
     "provide Field[Double]" in {
-      val field = testFieldType[Double](Fields.asDouble(_))
+      val field = testImplicitFieldType[Double]
       val num = random.toDouble
       setAndCheckValue(field, num)
     }
 
     "provide Field[Int]" in {
-      val field = testFieldType[Int](Fields.asInt(_))
+      val field = testImplicitFieldType[Int]
       val num = random.toInt
       setAndCheckValue(field, num)
     }
 
     "provide Field[Byte]" in {
-      val field = testFieldType[Byte](Fields.asByte(_))
+      val field = testImplicitFieldType[Byte]
       val num = random.toByte
       setAndCheckValue(field, num)
     }
 
     "provide Field[Short]" in {
-      val field = testFieldType[Short](Fields.asShort(_))
+      val field = testImplicitFieldType[Short]
       val num = random.toShort
       setAndCheckValue(field, num)
     }
 
     "provide Field[Long]" in {
-      val field = testFieldType[Long](Fields.asLong(_))
+      val field = testImplicitFieldType[Long]
       val num = random.toLong
       setAndCheckValue(field, num)
     }
@@ -140,13 +134,13 @@ class FieldSpec extends Specification {
     }
 
     "provide a generic implementation of Field[Seq[T]] which delegates inner conversion" in {
-      val field = newField[Seq[Int]](Fields.asSeq[Int](_, (s: String) => s.toInt))
+      import Fields._
+      val field = newField[Seq[Int]](asSeq[Int](_, (s: String) => s.toInt))
       field.update("1,2,3,4,5")
       field.value must beSome[Seq[Int]]
       field.value.get must_== List(1, 2, 3, 4, 5).toSeq
     }
   }
-
 
   def dateFormatFor(format: String = null): DateFormat = if (format == null) DateFormat.getInstance() else new SimpleDateFormat(format)
 
@@ -156,11 +150,20 @@ class FieldSpec extends Specification {
   }
 
 
-  def testFieldType[T](f: (String) => Field[T]): Field[T] = {
+  def testImplicitFieldType[T: TypeConverter] = {
+
+
+    import Fields._
+
     val fieldname = randomFieldName
-    val field = f(fieldname)
+
+    val field: Field[T] = fieldname
+
     field.name must_== fieldname
     field must beAnInstanceOf[Field[T]]
+
+
+
     field
   }
 

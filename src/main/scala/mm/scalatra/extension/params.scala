@@ -1,12 +1,12 @@
 package mm.scalatra.extension
 
 import org.scalatra.util.{MapWithIndifferentAccess, MultiMapHeadView}
-import mm.scalatra.common.conversions.{TypeConverter, ImplicitConversions}
+import mm.scalatra.common.conversions.{TypeConverter, DefaultImplicitConversions}
 
 
 trait ScalatraParamsImplicits {
 
-  self: ImplicitConversions =>
+  self: DefaultImplicitConversions =>
 
   type ParamsType = MultiMapHeadView[String, String] with MapWithIndifferentAccess[String]
 
@@ -18,7 +18,7 @@ trait ScalatraParamsImplicits {
 
 }
 
-object Params extends ScalatraParamsImplicits with ImplicitConversions {
+object Params extends ScalatraParamsImplicits with DefaultImplicitConversions {
 
 
 }

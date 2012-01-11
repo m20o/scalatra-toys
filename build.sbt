@@ -2,7 +2,7 @@ organization := "com.github.m20o"
 
 name := "scalatra-toys"
 
-version := "0.1.0-SNAPSHOT"
+version := "0.1.1-SNAPSHOT"
 
 scalaVersion := "2.9.1"
 

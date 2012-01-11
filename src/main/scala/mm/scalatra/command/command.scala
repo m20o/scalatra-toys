@@ -1,6 +1,7 @@
 package mm.scalatra.command
 
 import field._
+import mm.scalatra.common.conversions.DefaultImplicitConversions
 
 /**
  * Binding represent a '''converted value''', evaluated at runtime and converted to the given type T.
@@ -31,10 +32,10 @@ trait Binding[T] {
   /**
    * Converted value.
    */
-  lazy val value : Option[T] = field.value
+  lazy val value: Option[T] = field.value
 }
 
-object Command extends ImplicitCommonFields
+object Command extends ImplicitCommonFields with DefaultImplicitConversions
 
 /**
  * Trait that identifies a ''Command object'', i.e. a Scala class instance which fields are bound to external parameters

@@ -18,11 +18,11 @@ class ConversionsSpecs extends Specification {
     }
   }
 
-  "The DefaultConversion trait" should {
+  "The TypeConverterSupport trait" should {
 
-    object WithImplicit extends DefaultConversion
+    object WithImplicit extends TypeConverterSupport
 
-    type SafeType[T] = DefaultConversion#Safe[T]
+    type SafeType[T] = TypeConverterSupport#Safe[T]
 
     "provide Safe TypeConverter type " in {
       classOf[TypeConverter[_]] must beAssignableFrom[SafeType[_]]
@@ -65,9 +65,9 @@ class ConversionsSpecs extends Specification {
 
   }
 
-  "The ImplicitConversions trait" should {
+  "The DefaultImplicitConversions trait" should {
 
-    object Impl extends ImplicitConversions {
+    object Impl extends DefaultImplicitConversions {
 
       def testFor[T](source: String, expected: Option[T])(implicit t: TypeConverter[T]) = {
         t.convert(source) must_== expected

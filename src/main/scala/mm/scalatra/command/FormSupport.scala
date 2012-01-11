@@ -37,7 +37,7 @@ trait FormSupport {
         request.setAttribute(formClassRequestKey, newForm)
         newForm
       }
-      case Some(form: T) => form
+      case Some(form) => form
     }
   }
 
