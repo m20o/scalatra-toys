@@ -20,17 +20,18 @@ trait ScalatraParamsImplicits {
 
     def getAs[T <: Any](name: String)(implicit tc: TypeConverter[T]): Option[T] = params.get(name).flatMap(tc.convert(_))
 
-    def getAsDate(nameAndFormat: (String, String)) : Option[Date] = getAs(nameAndFormat._1)(stringToDate(nameAndFormat._2))
+    def getAs[T <: Date](nameAndFormat: (String, String)): Option[Date] = getAs(nameAndFormat._1)(stringToDate(nameAndFormat._2))
 
-    def getAsSeq[T <: Any](name: String)(implicit tc: TypeConverter[T]): Option[Seq[T]] = getAs(name)(stringToSeq(tc))
   }
 
   sealed class TypedMultiParams(multiParams: MultiParamsType) {
 
-    def getAs[T <: Any](name: String)(implicit tc: TypeConverter[T]): Option[Seq[T]] = multiParams.get(name) map { s =>
-      s.flatMap(tc.convert(_))
+    def getAs[T <: Any](name: String)(implicit tc: TypeConverter[T]): Option[Seq[T]] = multiParams.get(name) map {
+      s =>
+        s.flatMap(tc.convert(_))
     }
 
+    def getAs[T <: Date](nameAndFormat: (String, String)): Option[Seq[Date]] = getAs(nameAndFormat._1)(stringToDate(nameAndFormat._2))
   }
 
   implicit def toTypedParams(params: ParamsType) = new TypedParams(params)

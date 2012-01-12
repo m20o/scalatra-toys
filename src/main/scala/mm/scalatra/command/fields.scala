@@ -20,7 +20,7 @@ trait Field[T] {
   def name: String
 
   /**
-   * The original value of the fields,
+   * The original value of this field.
    */
   def originalValue: String
 
@@ -30,7 +30,7 @@ trait Field[T] {
   def value: Option[T]
 
   /**
-   * Update the current field value.
+   * Update the original value of this field.
    *
    */
   protected[command] def originalValue_=(value: String): Unit
@@ -38,7 +38,7 @@ trait Field[T] {
 }
 
 /**
- * Field  base class. Use an implicit [[mm.scalatra.common.conversions.TypeConverter]]
+ * Field base class. Use an implicit [[mm.scalatra.common.conversions.TypeConverter]]
  * as conversion strategy between strings and required types.
  */
 class BasicField[T](val name: String)(implicit val tc: TypeConverter[T]) extends Field[T] {

@@ -67,7 +67,8 @@ trait TypeConverterSupport {
 }
 
 /**
- * Default implicit TypeConverter definitions.
+ * Implicit TypeConverter values for value types and some factory method for
+ * dates and seqs.
  */
 trait DefaultImplicitConversions extends TypeConverterSupport {
 
@@ -87,12 +88,6 @@ trait DefaultImplicitConversions extends TypeConverterSupport {
 
   implicit val stringToSelf: TypeConverter[String] = Safe(s => s)
 
-  /**
-   * Return a [[mm.scalatra.common.conversions.TypeConverter]] for [[java.util.Date]] string with a given format.
-   *
-   * @param format - the date format, as specified in [[java.text.SimpleDateFormat]].
-   * @return the type converter.
-   */
   def stringToDate(format: => String): TypeConverter[Date] = stringToDateFormat(new SimpleDateFormat(format))
 
   def stringToDateFormat(format: => DateFormat): TypeConverter[Date] = Safe(format.parse(_))
