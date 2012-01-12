@@ -16,13 +16,13 @@ class FieldSpec extends Specification {
       def convert(string: String) = Option(parse(string))
     })
 
-    "provide an 'update' method that updates 'originalValue" in {
+    "provide a setter method that updates 'originalValue" in {
 
       val updater = new TestingFieldImpl[String]("name", (s: String) => null)
       updater.originalValue must beNull
 
       val newValue = System.currentTimeMillis().toString
-      updater.update(newValue)
+      updater.originalValue = newValue
 
       updater.originalValue must_== newValue
     }
@@ -32,7 +32,7 @@ class FieldSpec extends Specification {
       val stringToDate = new TestingFieldImpl[Date]("date", (s: String) => new Date(s.toLong))
       val now = new Date
 
-      stringToDate.update(now.getTime.toString)
+      stringToDate.originalValue = now.getTime.toString
 
       stringToDate.value must beSome(now)
     }
@@ -89,20 +89,20 @@ class FieldSpec extends Specification {
 
     "provide Field[String] that should treat blank strings an None" in {
       val field = newField[String](Fields.asString(_))
-      field.update("   ")
+      field.originalValue = "   "
       field.value must beNone
     }
 
     "provide Field[String] that should treat blank strings as Some() if required" in {
       val field = newField[String](Fields.asString(_, false))
-      field.update("   ")
+      field.originalValue = "   "
       field.value must beSome[String]
       field.value.get must_== "   "
     }
 
     "provide Field[String] with an equivalent Tuple argument syntax" in {
       val field = newField[String]((s: String) => Fields.asString(s -> false))
-      field.update("   ")
+      field.originalValue = "   "
       field.value must beSome[String]
       field.value.get must_== "   "
     }
@@ -110,7 +110,7 @@ class FieldSpec extends Specification {
     "provide Field[Date] with a default DateFormat" in {
       val field = newField[Date](Fields.asDate(_))
       val now = newDateWithFormattedString(dateFormatFor())
-      field.update(now._2)
+      field.originalValue = now._2
       field.value must beSome[Date]
       field.value.get must_== now._1
     }
@@ -119,7 +119,7 @@ class FieldSpec extends Specification {
       val format = "yyyyMMddHHmmsss"
       val field = newField[Date](Fields.asDate(_, format))
       val now = newDateWithFormattedString(dateFormatFor(format))
-      field.update(now._2)
+      field.originalValue = now._2
       field.value must beSome[Date]
       field.value.get must_== now._1
     }
@@ -128,7 +128,7 @@ class FieldSpec extends Specification {
       val format = "yyyyMMddHHmmsss"
       val field = newField[Date]((s: String) => Fields.asDateWithStringFormat(s -> format))
       val now = newDateWithFormattedString(dateFormatFor(format))
-      field.update(now._2)
+      field.originalValue = now._2
       field.value must beSome[Date]
       field.value.get must_== now._1
     }
@@ -136,7 +136,7 @@ class FieldSpec extends Specification {
     "provide a generic implementation of Field[Seq[T]] which delegates inner conversion" in {
       import Fields._
       val field = newField[Seq[Int]](asSeq[Int](_, (s: String) => s.toInt))
-      field.update("1,2,3,4,5")
+      field.originalValue = "1,2,3,4,5"
       field.value must beSome[Seq[Int]]
       field.value.get must_== List(1, 2, 3, 4, 5).toSeq
     }
@@ -171,7 +171,7 @@ class FieldSpec extends Specification {
 
   def setAndCheckValue[T](field: Field[T], value: T) = {
     field.originalValue must beNull
-    field.update(value.toString)
+    field.originalValue = value.toString
     field.value.get must_== value
   }
 

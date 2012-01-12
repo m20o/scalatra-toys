@@ -58,7 +58,7 @@ object Command extends ImplicitCommonFields with DefaultImplicitConversions
  * The binding is typed and for every registered type `T` (see [[mm.scalatra.command.field.ImplicitCommonFields]] for
  * a list of all availables) an automatic conversion `(String) => T` will take place during binding phase.
  *
- * After that binding has been performed (i.e. after that [[mm.scalatra.command.Command#doBinding()]] has been called)
+ * After that binding has been performed (i.e. after that [[mm.scalatra.command.Command# d o B i n d i n g ( )]] has been called)
  * on a specific instance, it is possible retrieve field values as [[scala.Option]], i.e.:
  *
  * {{{
@@ -126,7 +126,7 @@ trait Command {
       field = binding.field;
       value = entry._2
     ) {
-      field.update(value)
+      field.originalValue = value
     }
     doAfterBindingActions
     this

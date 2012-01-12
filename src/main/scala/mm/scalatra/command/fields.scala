@@ -33,7 +33,7 @@ trait Field[T] {
    * Update the current field value.
    *
    */
-  protected[command] def update(value: String)
+  protected[command] def originalValue_=(value: String): Unit
 
 }
 
@@ -49,7 +49,7 @@ class BasicField[T](val name: String)(implicit val tc: TypeConverter[T]) extends
 
   lazy val value: Option[T] = tc.convert(_original)
 
-  def update(value: String) {
+  def originalValue_=(value: String) {
     _original = value
   }
 }
