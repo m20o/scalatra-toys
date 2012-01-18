@@ -22,7 +22,7 @@ manners:
 ```scala
    resolvers += "scalatra-toys-repo" at "http://m20o.github.com/scalatra-toys/m2/"
 
-   libraryDependencies += "com.github.m20o" %% "scalatra-toys" % "0.1.0-SNAPSHOT"
+   libraryDependencies += "com.github.m20o" %% "scalatra-toys" % "0.1.1S-SNAPSHOT"
 ```
 
 
